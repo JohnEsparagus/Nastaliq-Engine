@@ -223,3 +223,5 @@ __marimo__/
 *.tar.gz
 bruh.txt
 data/
+# rendered samples
+out/
