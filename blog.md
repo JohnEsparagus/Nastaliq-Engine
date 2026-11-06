@@ -74,3 +74,11 @@ lstm                      (100, 2, 512)   2 directions x hidden
 fc                        (100, 2, 75)   one score per character class
 
 (2, 1, 64, 400) -> (100, 2, 75)
+
+
+
+Ok now its time to train....
+This is the moment i have been waiting for. Finally everything is built. Lets prepare to batch stuff cause rn we cant fit any of this big images on tensors.
+I learnt a lot of this from my MLVC.
+I love that module.
+

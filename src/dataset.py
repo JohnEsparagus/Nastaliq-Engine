@@ -1,10 +1,11 @@
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset
 
 from .augment import augment, rng_for
 from .cache import load_clean, load_index
 from .predict import load_chars, to_tensor
-from .sequence import to_reading_order
+from .sequence import output_frames, to_reading_order
 
 
 class LineDataset(Dataset):
@@ -25,3 +26,17 @@ class LineDataset(Dataset):
         image, label = to_reading_order(image, label)
         ids = torch.tensor([self.char_to_id[ch] for ch in label], dtype=torch.long)
         return to_tensor(image)[0], ids
+
+
+def pad_collate(batch):
+    images, targets = zip(*batch)
+    max_w = max(img.shape[-1] for img in images)
+
+    padded_img = []
+    for img in images:
+        pad_amount = max_w - img.shape[-1]
+        padded_img.append(F.pad(img, (0, pad_amount), value=1.0))
+
+    input_lengths = torch.tensor([output_frames(img.shape[-1]) for img in images], dtype=torch.long)
+    target_lengths = torch.tensor([len(ids) for ids in targets], dtype=torch.long)
+    return torch.stack(padded_img), torch.cat(targets), input_lengths, target_lengths
