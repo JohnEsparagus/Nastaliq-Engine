@@ -1,0 +1,9 @@
+# Pillow must come from the system package (python3-pil 10.2.0): the pip wheel
+# can render without libraqm, which breaks Nastaliq shaping. So the venv is
+# created with system packages visible:
+#   sudo apt install python3-pil fonts-noto-core
+#   python3 -m venv --system-site-packages .venv
+#   .venv/bin/pip install -r requirements.txt
+numpy==2.5.4
+python-bidi==0.6.12
+torch==2.14.1

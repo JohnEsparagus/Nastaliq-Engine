@@ -1,6 +1,6 @@
 import unittest
 
-from render import HEIGHT, load_font, render_line
+from src.render import HEIGHT, load_font, render_line
 
 
 class TestRender(unittest.TestCase):
@@ -18,9 +18,8 @@ class TestRender(unittest.TestCase):
         self.assertLess(render_line("کیا", self.shaped).width, render_line("کیا حال ہے؟", self.shaped).width)
 
     def test_letter_size_does_not_depend_on_the_line(self):
-        # A tall word next to a flat one must not shrink the flat one.
         flat = render_line("دو", self.shaped)
-        both = render_line("دو مُستحکم", self.shaped)
+        both = render_line("دو م\u064fستحکم", self.shaped)
         self.assertEqual(flat.height, both.height)
 
     def test_shaping_changes_the_image(self):
@@ -30,7 +29,6 @@ class TestRender(unittest.TestCase):
         )
 
     def test_lookalikes_draw_the_same(self):
-        # The A1 trap: different code points, same pixels.
         self.assertEqual(render_line("كيا", self.shaped).tobytes(), render_line("کیا", self.shaped).tobytes())
 
     def test_blank_text_raises(self):

@@ -1,37 +1,23 @@
-"""A1: build the normalised corpus and freeze the character set.
-
-    python3 build_corpus.py
-
-Writes data/corpus.tsv (source<TAB>sentence) and charset.json.
-"""
 import json
 import re
 from collections import Counter
-from pathlib import Path
 
 from PIL import ImageFont
 
-from normalize import normalize
+from .config import CHARSET, CORPUS, DATA, FONT
+from .normalize import normalize
 
-DATA = Path("data")
-FONT = "/usr/share/fonts/truetype/noto/NotoNastaliqUrdu-Regular.ttf"
-# A character needs this many occurrences to earn a CTC label. Sentences with
-# rarer characters are dropped instead.
 MIN_COUNT = 100
 
-# Letters Sindhi uses and Urdu doesn't. The news sets have Sindhi mixed in.
 SINDHI_LETTERS = re.compile(
     "[ٺٻٽٿڀڃڄڇڊڌ"
     "ڍڏڙڪڳڻ۽۾]"
 )
-# Sindhi "is / are", for the few Sindhi sentences with no Sindhi-only letter.
 SINDHI_WORDS = re.compile(r"(^|\s)(آهي|آهن)(\s|[.۔]|$)")
 LATIN = re.compile("[A-Za-z]")
 
 
 def repair_mojibake(text):
-    """The 2007 set is UTF-8 that was decoded as cp1252 and saved again.
-    cp1252 leaves 5 bytes undefined; those came through as latin-1."""
     raw = bytearray()
     for ch in text:
         try:
@@ -42,7 +28,6 @@ def repair_mojibake(text):
 
 
 def load_sentences():
-    """Yields (source, raw sentence) from every Leipzig *-sentences.txt."""
     for path in sorted(DATA.glob("*/*-sentences.txt")):
         source = path.parent.name
         text = path.read_text(encoding="utf-8")
@@ -54,9 +39,8 @@ def load_sentences():
 
 
 def font_has_glyph():
-    """Returns a check for whether the font draws a character, or falls back to .notdef."""
     font = ImageFont.truetype(FONT, 40)
-    notdef = bytes(font.getmask(""))
+    notdef = bytes(font.getmask("\ue004"))
     return lambda ch: ch == " " or bytes(font.getmask(ch)) != notdef
 
 
@@ -104,8 +88,8 @@ def main():
         "chars": chars,
         "counts": {ch: counts[ch] for ch in chars},
     }
-    Path("charset.json").write_text(json.dumps(charset, ensure_ascii=False, indent=1), encoding="utf-8")
-    with open(DATA / "corpus.tsv", "w", encoding="utf-8") as f:
+    CHARSET.write_text(json.dumps(charset, ensure_ascii=False, indent=1), encoding="utf-8")
+    with open(CORPUS, "w", encoding="utf-8") as f:
         for source, sentence in kept:
             f.write(f"{source}\t{sentence}\n")
 

@@ -1,7 +1,7 @@
 import unittest
 
-from build_corpus import repair_mojibake
-from normalize import normalize
+from src.build_corpus import repair_mojibake
+from src.normalize import normalize
 
 
 class TestNormalize(unittest.TestCase):
@@ -10,39 +10,38 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(normalize("الله"), "اللہ")
 
     def test_yeh_hamza_composes_before_and_after_mapping(self):
-        self.assertEqual(normalize("ئ"), "ئ")  # ي + ٔ (canonical)
-        self.assertEqual(normalize("یٔ"), "ئ")  # ی + ٔ (no canonical form)
+        self.assertEqual(normalize("ي\u0654"), "ئ")
+        self.assertEqual(normalize("ی\u0654"), "ئ")
 
     def test_heh_hamza_composes_after_mapping(self):
-        self.assertEqual(normalize("هٔ"), "ۂ")  # ه + ٔ -> ۂ
+        self.assertEqual(normalize("ه\u0654"), "ۂ")
 
     def test_alef_madda_composes(self):
-        self.assertEqual(normalize("آ"), "آ")  # ا + ٓ -> آ
+        self.assertEqual(normalize("ا\u0653"), "آ")
 
     def test_diacritics_are_kept(self):
-        self.assertEqual(normalize("مُلک"), "مُلک")
+        self.assertEqual(normalize("م\u064fلک"), "م\u064fلک")
 
     def test_digits_fold_to_western(self):
         self.assertEqual(normalize("۲۰۲۰ ٢٠٢٠"), "2020 2020")
 
     def test_zwnj_is_a_space_and_invisibles_go(self):
-        self.assertEqual(normalize("خوش‌آمدید"), "خوش آمدید")
-        self.assertEqual(normalize("‏پاکستان‎"), "پاکستان")
-        self.assertEqual(normalize("پاکـــستان"), "پاکستان")  # tatweel
+        self.assertEqual(normalize("خوش\u200cآمدید"), "خوش آمدید")
+        self.assertEqual(normalize("\u200fپاکستان\u200e"), "پاکستان")
+        self.assertEqual(normalize("پاکـــستان"), "پاکستان")
 
     def test_presentation_forms_unfold(self):
-        self.assertEqual(normalize("ﭽ"), "چ")  # ﭽ -> چ
-        self.assertEqual(normalize("ﺅ"), "ؤ")  # ﺅ -> ؤ
+        self.assertEqual(normalize("\ufb7d"), "چ")
+        self.assertEqual(normalize("\ufe85"), "ؤ")
 
     def test_whitespace_collapses(self):
         self.assertEqual(normalize("  ایک   دو\t"), "ایک دو")
 
     def test_idempotent(self):
-        for s in ["آپ كے پاس كيا ہے؟", "ئ هٔ", "خوش‌آمدید ۲۰۲۰…"]:
+        for s in ["آپ كے پاس كيا ہے؟", "ي\u0654 ه\u0654", "خوش\u200cآمدید ۲۰۲۰…"]:
             self.assertEqual(normalize(normalize(s)), normalize(s))
 
     def test_repair_mojibake(self):
-        # Break it the way the 2007 set was broken. ہ is DB 81, and 0x81 is undefined in cp1252.
         def as_cp1252(b):
             try:
                 return bytes([b]).decode("cp1252")

@@ -222,6 +222,8 @@ __marimo__/
 
 *.tar.gz
 bruh.txt
-data/
+data/*
+!data/charset.json
+checkpoints/
 # rendered samples
 out/
