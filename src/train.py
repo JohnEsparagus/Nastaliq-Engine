@@ -41,6 +41,10 @@ def main():
     print(f"  every line fits: {bool((input_lengths <= log_probs.shape[0]).all())}   input_lengths <= T")
     print(f"  loss at step 0: {loss.item():.3f}")
 
+    #training loops
+
+
+
 
 if __name__ == "__main__":
     main()

@@ -82,3 +82,25 @@ This is the moment i have been waiting for. Finally everything is built. Lets pr
 I learnt a lot of this from my MLVC.
 I love that module.
 
+
+Prediciton from train.py
+Loss will be high,
+'''
+lines:     16, e.g. ثانیہ اور انکے والدین کا موقف جاننے کی کوشش کے باو...
+alphabet:  74 characters + blank = 75 classes
+
+one batch from pad_collate:
+  images          (16, 1, 64, 1254)   (N, 1, H, widest W)
+  targets         (1959,)   all 16 labels joined, ids 1..74
+  input_lengths   [125, 116, 106, 213, 295, 201, 111, 312, 310, 202, 313, 58, 228, 188, 92, 160]   frames per line (width // 4)
+  target_lengths  [77, 74, 69, 133, 206, 132, 77, 194, 196, 127, 207, 33, 148, 126, 61, 99]   characters per line
+
+model:     7,693,835 weights
+
+one forward pass:
+  log_probs       (313, 16, 75)   (T, N, classes)
+  every line fits: True   input_lengths <= T
+  loss at step 0: 5.392
+  '''
+
+  This is the results 
