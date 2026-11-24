@@ -32,15 +32,19 @@ def main():
     model.train()
     optimizer = Adam(model.parameters(), lr=1e-3)
     ctc = nn.CTCLoss(blank=0)
-    print(f"model:     {sum(p.numel() for p in model.parameters()):,} weights\n")
+    for i in range(len(rows)-14):
+        optimizer.zero_grad()
+        log_probs = model(images)
+        loss = ctc(log_probs, targets, input_lengths, target_lengths)
+    
+        loss.backward()
+        optimizer.step()
+        print(loss.item())
 
-    log_probs = model(images)
-    loss = ctc(log_probs, targets, input_lengths, target_lengths)
-    print("one forward pass:")
-    print(f"  log_probs       {tuple(log_probs.shape)}   (T, N, classes)")
-    print(f"  every line fits: {bool((input_lengths <= log_probs.shape[0]).all())}   input_lengths <= T")
-    print(f"  loss at step 0: {loss.item():.3f}")
-
+    model.eval()
+    with torch.no_grad():
+        preds = greedy_decode(model(images), alphabet)
+    print(preds[0], "\n", rows[0][2])
     #training loops
 
 
